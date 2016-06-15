@@ -11,6 +11,7 @@ library(pseval)
 library(survival)
 
 ## ------------------------------------------------------------------------
+set.seed(500)
 fakedata <- generate_example_data(n = 500)
 head(fakedata)
 
@@ -62,6 +63,9 @@ binary.boot
 #    integrate_parametric(S.1 ~ BIP) +
 #    risk_binary(model = Y ~ S.1 * Z, D = 50, risk = risk.logit) +
 #    ps_estimate(method = "BFGS")
+
+## ----stg, cache = TRUE---------------------------------------------------
+calc_STG(binary.boot)
 
 ## ----summary-------------------------------------------------------------
 smary <- summary(binary.boot)
@@ -121,7 +125,7 @@ surv.fit <- psdesign(fakedata, Z = Z, Y = Surv(time.obs, event.obs),
   integrate_semiparametric(formula.location = S.1 ~ BIP, formula.scale = S.1 ~ 1) + 
   risk_exponential(D = 10) + ps_estimate(method = "BFGS") + ps_bootstrap(n.boots = 20)
 surv.fit
-plot(surv.fit)
+plot(surv.fit, t = .4)
 
 ## ------------------------------------------------------------------------
 with(fakedata, table(S.obs.cat, BIP.cat))
