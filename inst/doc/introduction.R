@@ -64,9 +64,6 @@ binary.boot
 #    risk_binary(model = Y ~ S.1 * Z, D = 50, risk = risk.logit) +
 #    ps_estimate(method = "BFGS")
 
-## ----stg, cache = TRUE---------------------------------------------------
-calc_STG(binary.boot)
-
 ## ----summary-------------------------------------------------------------
 smary <- summary(binary.boot)
 
@@ -134,7 +131,7 @@ with(fakedata, table(S.obs.cat, BIP.cat))
 cat.fit <- psdesign(fakedata, Z = Z, Y = Y.obs, 
                      S = S.obs.cat, BIP = BIP.cat) + 
   integrate_nonparametric(formula = S.1 ~ BIP) + 
-  risk_binary(Y ~ S.1 * Z, D = 10, risk = risk.probit) + ps_estimate(method = "BFGS")
+  risk_binary(Y ~ S.1 * Z, D = 10, risk = risk.probit) + ps_estimate(method = "pseudo-score")
 cat.fit
 plot(cat.fit)
 
