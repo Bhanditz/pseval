@@ -2,7 +2,7 @@
 % Please edit documentation in R/print.R
 \name{wem_test}
 \alias{wem_test}
-\title{Test for wide effect modificiation}
+\title{Test for wide effect modification}
 \usage{
 wem_test(x)
 }
@@ -12,4 +12,3 @@ wem_test(x)
 \description{
 This runs a multivariate Wald test on the interaction terms of the model, using the bootstrap covariance
 }
-

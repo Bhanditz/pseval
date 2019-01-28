@@ -55,13 +55,13 @@ risk_1(s_1) = g\left\{F_{s_1}\left[Y(1) | S(1) = s_1\right]\right\}, \\
 risk_0(s_1) = g\left\{F_{s_1}\left[Y(0) | S(1) = s_1\right]\right\}.
 $$
 
-Neither of the joint risk estimands are indentifiable in a standard randomized trial, as either S(0) or S(1) or both will be missing for each subject. In the special case where $S(0)$ is constant, such as the immune response to HIV antigens or Hep B in the placebo arm of a vaccine trial, the joint and marginal risk estimands are equivalent. This special case is referred to as case constant biomarker (CB) in much of the literature [@Gilbert08]; S_i(0) = c for subjects i. This may occur outside the vaccine setting when one considers the AUC of a treament drug as a surrogate; those recieving placebo will have no drug and therefore all placebo AUC will be 0. Under assumptions given below, and in the case CB setting, the marginal risk estimand is indentifiable in the treatment arm. 
+Neither of the joint risk estimands are indentifiable in a standard randomized trial, as either S(0) or S(1) or both will be missing for each subject. In the special case where $S(0)$ is constant, such as the immune response to HIV antigens or Hep B in the placebo arm of a vaccine trial, the joint and marginal risk estimands are equivalent. This special case is referred to as case constant biomarker (CB) in much of the literature [@Gilbert08]; S_i(0) = c for subjects i. This may occur outside the vaccine setting when one considers the AUC of a treatment drug as a surrogate; those receiving placebo will have no drug and therefore all placebo AUC will be 0. Under assumptions given below, and in the case CB setting, the marginal risk estimand is indentifiable in the treatment arm. 
 
 As well, as will be outlined below, there are specific trial augmentations that allow for the measurement or imputation of the missing counterfactual Ss. Under one of these augmentations, case CB can sometimes be induced by considering a function of the a candidate surrogate for evaluation. Greater detail on this point given below. 
 
 Specification of the distributions of $Y(z) | S(1)$ determines the likelihood, we will denote this as $f(y | \beta, s_1, z)$. If $S(1)$ were fully observed, simple maximum likelihood estimation could be used. The key challenge in estimating these risk estimands is solving the problem of conditioning on counterfactual values that are not observable for at least a subset of subjects in a randomized trial. This involves integrating out missing values based on some models and/or set of assumptions.
 
-## Prinicipal Surrogate Criteria
+## Principal Surrogate Criteria
 
 @Frangakis02 gave a single criterion for a biomarker S to be a PS: causal effects of the treatment on the clinical outcome only exist when causal effects of the treatment on the intermediate variable exist. In general this can only be evaluated using the joint risk estimands, which consider not only the counterfactual values of the biomarker under treatment, but also under control $S(0)$. However, in the special case where all $S(0)$ values are constant, say at level $C$, such as an immune response to HIV in a HIV negative population pre-vaccination this criteria, often referred to as average causal necessity (ACN), can by written in terms of the marginal risk estimands as:
   
@@ -128,7 +128,7 @@ $$
 
 This procedure is called estimated maximum likelihood (EML) and was developed in @Pepe91. The key idea is that we are averaging the likelihood contributions for subjects missing $S(1)$ with respect to the estimated distribution of $S(1) | W$. A BIP $W$ that is strongly associated with $S(1)$ is needed for adequate performance. 
 
-Closed-form inference is not available for EML estimates, thus we recommend use of the bootstrap for estimation of standard errors. It was suggested as an approach to prinicipal surrogate evaluation by @Gilbert08 and @Huang11.
+Closed-form inference is not available for EML estimates, thus we recommend use of the bootstrap for estimation of standard errors. It was suggested as an approach to principal surrogate evaluation by @Gilbert08 and @Huang11.
 
 
 ##Pseudoscore 
@@ -266,7 +266,7 @@ The risk model is the specification of the distribution for the outcome $Y$ give
 Let's add a simple binary risk model using the logit link. The argument `D` specifies the number of samples to use for the simulated annealing, also known as empirical integration, in the EML procedure. In general, D should be set to something reasonably large, like 2 or 3 times the sample size. 
 
 ```{r riskbin}
-binary.ps <- binary.ps + risk_binary(model = Y ~ S.1 * Z, D = 50, risk = risk.logit)
+binary.ps <- binary.ps + risk_binary(model = Y ~ S.1 * Z, D = 5, risk = risk.logit)
 binary.ps
 ```
 
@@ -274,11 +274,11 @@ binary.ps
 
 We estimate the parameters and bootstrap using the same type of syntax. We can add a `"ps_estimate"` object, which takes optional arguments `start` for starting values, and other arguments that are passed to the `optim` function. The `method` argument determines the optimization method, we have found that "BFGS" works well in these types of problems and it is the default. Use `"pseudo-score"` as the `method` argument for pseudo-score estimation for binary risk models with categorical BIPs. 
 
-The `ps_bootstrap` function takes the additional arguments `n.boots` for the number of bootstrap replicates, and `progress.bar` which is a logical that displays a progress bar in the R console if true. It is helpful to pass the estimates as starting values in the bootstrap resampling. With estimates and bootstrap replicates present, printing the psdesign object displays additional information. 
+The `ps_bootstrap` function takes the additional arguments `n.boots` for the number of bootstrap replicates, and `progress.bar` which is a logical that displays a progress bar in the R console if true. It is helpful to pass the estimates as starting values in the bootstrap resampling. With estimates and bootstrap replicates present, printing the psdesign object displays additional information. In real examples you should use more than 10 bootstrap replicates.
 
-```{r est, cache = TRUE}
+```{r est}
 binary.est <- binary.ps + ps_estimate(method = "BFGS")
-binary.boot <- binary.est + ps_bootstrap(n.boots = 500, progress.bar = FALSE, 
+binary.boot <- binary.est + ps_bootstrap(n.boots = 10, progress.bar = FALSE, 
                             start = binary.est$estimates$par, method = "BFGS")
 binary.boot
 ```
@@ -301,7 +301,7 @@ We provide summary and plotting methods for the psdesign object. If bootstrap re
 
 Another way to assess wide effect modification is to compute the standardized total gain (STG) [@Gabriel15]. This is implemented in the `calc_STG` function. The standardized total gain can be interpreted as the area sandwiched between the risk difference curve and the horizontal line at the marginal risk difference. It is a measure of the spread of the distribution of the risk difference, and is a less parametric way to test for wide effect modification. The `calc_STG` function computes the STG at the estimated parameters, at the bootstrap samples, if present. The function prints the results and invisibly returns a list containing the observed STG, and the bootstrapped STGS.
 
-```{r stg, cache = TRUE}
+```{r stg, eval = FALSE}
 calc_STG(binary.boot, progress.bar = FALSE)
 ```
 
@@ -387,7 +387,7 @@ Our package uses the `+` sign to combine function calls into a single object. Th
 
 ### Plot both types of CI
 
-```{r plotciag}
+```{r plotciag, eval = FALSE}
 plot(binary.boot, contrast = "TE", lwd = 2, CI.type = "band")
 sbs <- calc_risk(binary.boot, CI.type = "pointwise", n.samps = 200)
 lines(Y.lower.CL.2.5 ~ S.1, data = sbs, lty = 3, lwd = 2)
@@ -409,7 +409,7 @@ ggplot(TE.est,
 
 ### Case-control design
 
-```{r ccest}
+```{r ccest, eval = FALSE}
 cc.fit <- binary.cc + integrate_parametric(S.1 ~ BIP) + 
   risk_binary(D = 10) + ps_estimate()
 cc.fit
@@ -417,7 +417,7 @@ cc.fit
 
 ### Survival outcome
 
-```{r surv1}
+```{r surv1, eval = FALSE}
 surv.fit <- psdesign(fakedata, Z = Z, Y = Surv(time.obs, event.obs), 
                      S = S.obs, BIP = BIP, CPV = CPV) + 
   integrate_semiparametric(formula.location = S.1 ~ BIP, formula.scale = S.1 ~ 1) + 
@@ -433,7 +433,7 @@ fakedata$Y.cont <- log(fakedata$time.obs + 0.01)
 cont.fit <- psdesign(fakedata, Z = Z, Y = Y.cont, 
                      S = S.obs, BIP = BIP, CPV = CPV) + 
   integrate_semiparametric(formula.location = S.1 ~ BIP, formula.scale = S.1 ~ 1) + 
-  risk_continuous(D = 10) + ps_estimate(method = "BFGS") + ps_bootstrap(n.boots = 20)
+  risk_continuous(D = 10) + ps_estimate(method = "BFGS") #+ ps_bootstrap(n.boots = 20)
 cont.fit
 plot(cont.fit, contrast = "risk")
 ```

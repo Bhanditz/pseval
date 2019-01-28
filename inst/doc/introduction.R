@@ -57,12 +57,12 @@ binary.ps + integrate_parametric(S.0 ~ BIP)
 ?add_riskmodel
 
 ## ----riskbin-------------------------------------------------------------
-binary.ps <- binary.ps + risk_binary(model = Y ~ S.1 * Z, D = 50, risk = risk.logit)
+binary.ps <- binary.ps + risk_binary(model = Y ~ S.1 * Z, D = 5, risk = risk.logit)
 binary.ps
 
-## ----est, cache = TRUE---------------------------------------------------
+## ----est-----------------------------------------------------------------
 binary.est <- binary.ps + ps_estimate(method = "BFGS")
-binary.boot <- binary.est + ps_bootstrap(n.boots = 500, progress.bar = FALSE, 
+binary.boot <- binary.est + ps_bootstrap(n.boots = 10, progress.bar = FALSE, 
                             start = binary.est$estimates$par, method = "BFGS")
 binary.boot
 
@@ -72,8 +72,8 @@ binary.boot
 #    risk_binary(model = Y ~ S.1 * Z, D = 50, risk = risk.logit) +
 #    ps_estimate(method = "BFGS")
 
-## ----stg, cache = TRUE---------------------------------------------------
-calc_STG(binary.boot, progress.bar = FALSE)
+## ----stg, eval = FALSE---------------------------------------------------
+#  calc_STG(binary.boot, progress.bar = FALSE)
 
 ## ----summary-------------------------------------------------------------
 smary <- summary(binary.boot)
@@ -112,13 +112,13 @@ legend("topright", legend = c("R0", "R1"), lty = c(1, 2), lwd = 2)
 te.est <- calc_risk(binary.boot, CI.type = "pointwise", n.samps = 200)
 head(te.est, 3)
 
-## ----plotciag------------------------------------------------------------
-plot(binary.boot, contrast = "TE", lwd = 2, CI.type = "band")
-sbs <- calc_risk(binary.boot, CI.type = "pointwise", n.samps = 200)
-lines(Y.lower.CL.2.5 ~ S.1, data = sbs, lty = 3, lwd = 2)
-lines(Y.upper.CL.97.5 ~ S.1, data = sbs, lty = 3, lwd = 2)
-legend("bottomright", lwd = 2, lty = 1:3, 
-       legend = c("estimate", "simultaneous CI", "pointwise CI"))
+## ----plotciag, eval = FALSE----------------------------------------------
+#  plot(binary.boot, contrast = "TE", lwd = 2, CI.type = "band")
+#  sbs <- calc_risk(binary.boot, CI.type = "pointwise", n.samps = 200)
+#  lines(Y.lower.CL.2.5 ~ S.1, data = sbs, lty = 3, lwd = 2)
+#  lines(Y.upper.CL.97.5 ~ S.1, data = sbs, lty = 3, lwd = 2)
+#  legend("bottomright", lwd = 2, lty = 1:3,
+#         legend = c("estimate", "simultaneous CI", "pointwise CI"))
 
 ## ----ggpt----------------------------------------------------------------
 library(ggplot2)
@@ -127,25 +127,25 @@ ggplot(TE.est,
        aes(x = S.1, y = Y, ymin = Y.lower.CL.0.95, ymax = Y.upper.CL.0.95)) + 
   geom_line() + geom_ribbon(alpha = .2) + ylab(attr(TE.est, "Y.function"))
 
-## ----ccest---------------------------------------------------------------
-cc.fit <- binary.cc + integrate_parametric(S.1 ~ BIP) + 
-  risk_binary(D = 10) + ps_estimate()
-cc.fit
+## ----ccest, eval = FALSE-------------------------------------------------
+#  cc.fit <- binary.cc + integrate_parametric(S.1 ~ BIP) +
+#    risk_binary(D = 10) + ps_estimate()
+#  cc.fit
 
-## ----surv1---------------------------------------------------------------
-surv.fit <- psdesign(fakedata, Z = Z, Y = Surv(time.obs, event.obs), 
-                     S = S.obs, BIP = BIP, CPV = CPV) + 
-  integrate_semiparametric(formula.location = S.1 ~ BIP, formula.scale = S.1 ~ 1) + 
-  risk_exponential(D = 10) + ps_estimate(method = "BFGS") + ps_bootstrap(n.boots = 20)
-surv.fit
-plot(surv.fit)
+## ----surv1, eval = FALSE-------------------------------------------------
+#  surv.fit <- psdesign(fakedata, Z = Z, Y = Surv(time.obs, event.obs),
+#                       S = S.obs, BIP = BIP, CPV = CPV) +
+#    integrate_semiparametric(formula.location = S.1 ~ BIP, formula.scale = S.1 ~ 1) +
+#    risk_exponential(D = 10) + ps_estimate(method = "BFGS") + ps_bootstrap(n.boots = 20)
+#  surv.fit
+#  plot(surv.fit)
 
 ## ----cont1---------------------------------------------------------------
 fakedata$Y.cont <- log(fakedata$time.obs + 0.01)
 cont.fit <- psdesign(fakedata, Z = Z, Y = Y.cont, 
                      S = S.obs, BIP = BIP, CPV = CPV) + 
   integrate_semiparametric(formula.location = S.1 ~ BIP, formula.scale = S.1 ~ 1) + 
-  risk_continuous(D = 10) + ps_estimate(method = "BFGS") + ps_bootstrap(n.boots = 20)
+  risk_continuous(D = 10) + ps_estimate(method = "BFGS") #+ ps_bootstrap(n.boots = 20)
 cont.fit
 plot(cont.fit, contrast = "risk")
 
